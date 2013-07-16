@@ -506,7 +506,10 @@ class FitnessActivity(Resource):
                   'is_live': parse_bool,
                   'path': ArrayPath,
                   'images': ArrayImages,
+                  'share': None,
+                  'share_map': None,
                   'source': None,
+                  'entry_mode': None,
                   'activity': None,
                   'comments': PropResourceLink('CommentThread'),
                   'previous': PropResourceLink('FitnessActivity'),
@@ -559,7 +562,10 @@ class FitnessActivitySummary(Resource):
                   'climb': None,
                   'notes': None,
                   'is_live': parse_bool,
+                  'share': None,
+                  'share_map': None,
                   'source': None,
+                  'entry_mode': None,
                   'activity': None,
                   }
     _prop_main = ('type', 'start_time',)
@@ -577,6 +583,10 @@ class FitnessActivityFeedItem(FeedItem):
                   'type': None,
                   'duration': None,
                   'total_distance': parse_distance,
+                  'total_calories': None,
+                  'has_path': parse_bool,
+                  'entry_mode': None,
+                  'source': None,
                   'uri': PropResourceLink('FitnessActivity'),
                   }
     _prop_main = ('type', 'start_time',)
