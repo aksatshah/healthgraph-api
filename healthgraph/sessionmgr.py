@@ -27,8 +27,10 @@ class Session(object):
         self._access_token = access_token
         
     def request(self, request_type, resource, content_type=None, 
-                params=None, data=None):
+                params=None, data=None, modified_since=None):
         headers = {'Authorization': "Bearer %s" % self._access_token,}
+        if modified_since is not None:
+            headers['If-Modified-Since'] = modified_since
         content_header = None
         if content_type is not None:
             if request_type == 'GET':
