@@ -78,15 +78,19 @@ def parse_distance_km(val):
     
 def parse_resource_dict(prop_defs, data):
     prop_dict = dict([(k, None) for k in prop_defs])
-    for k,v in data.items():
-        if prop_defs.has_key(k):
-            action = prop_defs[k]
-            if action is None or v is None:
-                prop_dict[k] = v
-            elif callable(action):
-                prop_dict[k] = action(v)
-        else:
-            pass
+    if data is not None:
+        for k,v in data.items():
+            if prop_defs.has_key(k):
+                action = prop_defs[k]
+                if action is None or v is None:
+                    prop_dict[k] = v
+                elif callable(action):
+                    prop_dict[k] = action(v)
+            else:
+                pass
+    else:
+        prop_dict['items'] = []
+        prop_dict['size'] = 0
     return prop_dict
 
 def parse_date_param(val):

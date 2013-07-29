@@ -10,6 +10,10 @@ This module implements sessions for making REST requests to the Health Graph API
 import requests
 import exceptions
 import settings
+from time import mktime
+from datetime import datetime
+from wsgiref.handlers import format_date_time
+import pdb
 
 
 __author__ = "Ali Onur Uyar"
@@ -29,8 +33,7 @@ class Session(object):
     def request(self, request_type, resource, content_type=None, 
                 params=None, data=None, modified_since=None):
         headers = {'Authorization': "Bearer %s" % self._access_token,}
-        if modified_since is not None:
-            headers['If-Modified-Since'] = modified_since
+        headers['If-Modified-Since'] = modified_since
         content_header = None
         if content_type is not None:
             if request_type == 'GET':
@@ -47,8 +50,8 @@ class Session(object):
                                params=params, data=data)
         return req
     
-    def get(self, resource, content_type=None, params=None):
-        return self.request('GET', resource, content_type, params=params)
+    def get(self, resource, content_type=None, params=None, modified_since=None):
+        return self.request('GET', resource, content_type, params=params, modified_since=modified_since)
     
     def post(self, resource, content_type=None, data=None):
         return self.request('POST', resource, content_type, data=data)

@@ -87,9 +87,12 @@ class APIobject(object):
         else:
             self._session = sessionmgr.get_session()
             
-    def _get_resource_data(self, resource, content_type, params=None):
-        resp = self._session.get(resource, content_type, params)
-        return resp.json() # TODO - Error Checking
+    def _get_resource_data(self, resource, content_type, params=None, modified_since=None):
+        resp = self._session.get(resource, content_type, params, modified_since)
+        if resp.status_code == sessionmgr.requests.codes.ok:
+          return resp.json() # TODO - Error Checking
+        return None
+
     
     def _get_linked_resource(self, link, cls_override=None, **kwargs):
         if link is not None:
@@ -120,10 +123,10 @@ class BaseResource(APIobject):
     
     _content_type = None
     
-    def __init__(self, resource = None, session=None, params=None):
+    def __init__(self, resource = None, session=None, params=None, modified_since=None):
         super(BaseResource,self).__init__(session=session)
         self._resource = resource
-        self.load(params)
+        self.load(params, modified_since)
             
     @property
     def resource(self):
@@ -133,10 +136,10 @@ class BaseResource(APIobject):
     def content_type(self):
         return self._content_type
     
-    def load(self, params=None):
+    def load(self, params=None, modified_since=None):
         if self._resource is not None:
             data = self._get_resource_data(self._resource, self._content_type, 
-                                            params)
+                                            params, modified_since)
             self._prop_dict = self._parse_data(data)
             
     def _parse_data(self, data):
@@ -202,8 +205,8 @@ class ArrayComments(ResourceArray):
         
 class Resource(BaseResource, ContainerMixin):
     
-    def __init__(self, resource = None, params=None, session=None):
-        super(Resource, self).__init__(resource, params=params, session=session)
+    def __init__(self, resource = None, params=None, session=None, modified_since=None):
+        super(Resource, self).__init__(resource, params=params, session=session, modified_since=modified_since)
 
 
 class ResourceFeedIter(BaseResource):
@@ -219,7 +222,8 @@ class ResourceFeedIter(BaseResource):
                  date_min=None, date_max=None, 
                  mod_date_min=None, mod_date_max=None,
                  descending=True,
-                 session=None):
+                 session=None,
+                 modified_since=None):
         func_params = locals()
         params = {'pageSize': settings.DEFAULT_PAGE_SIZE,}
         for func_key, api_key in (('date_min', 'noEarlierThan'),
@@ -230,7 +234,7 @@ class ResourceFeedIter(BaseResource):
             if val is not None:
                 params[api_key] = val
         super(ResourceFeedIter, self).__init__(resource, params=params,
-                                               session=session)
+                                               session=session, modified_since=modified_since)
         self._descending = descending
         if descending:
             self._iter = iter(self._prop_dict['items'])
@@ -339,13 +343,15 @@ class User(Resource):
     def get_fitness_activity_iter(self, 
                                   date_min=None, date_max=None, 
                                   mod_date_min=None, mod_date_max=None,
-                                  descending=True):
+                                  descending=True,
+                                  modified_since=None):
         return self._get_linked_resource(self._prop_dict['fitness_activities'],
                                          date_min=date_min, 
                                          date_max=date_max,
                                          mod_date_min=mod_date_min,
                                          mod_date_max=mod_date_max,
-                                         descending=descending)
+                                         descending=descending,
+                                         modified_since=modified_since)
     
     def get_strength_activity_iter(self,
                                    date_min=None, date_max=None, 
@@ -610,14 +616,16 @@ class FitnessActivityIter(ResourceFeedIter):
                  date_min=None, date_max=None, 
                  mod_date_min=None, mod_date_max=None,
                  descending=True,
-                 session=None):
+                 session=None,
+                 modified_since=None):
         super(FitnessActivityIter, self).__init__(resource,
                                                   date_min=date_min,
                                                   date_max=date_max,
                                                   mod_date_min=mod_date_min,
                                                   mod_date_max=mod_date_max,
                                                   descending=descending,
-                                                  session=session)
+                                                  session=session,
+                                                  modified_since = modified_since)
 
 
 class StrengthActivityFeedItem(FeedItem):
